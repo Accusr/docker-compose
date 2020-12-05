@@ -1,0 +1,382 @@
+version: '3.6'
+services:
+##################RABBITMQ#####################
+#  rabbitmq:
+#    image: rabbitmq:3-management
+#    restart: always
+#    ports:
+#      - 15672:15672
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+
+##################配置中心#####################
+  config:
+    container_name: config
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/config:0.0.1
+#    depends_on:
+#      - redis
+#    networks:
+#      - my_new
+    ports:
+      - 8888:8888
+#    volumes:
+      # - /root/java:/app
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx100m -jar /app/config.jar
+##################EUREKA-1#######################
+  eureka:
+    container_name: eureka
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/eureka:0.0.1
+    depends_on:
+      - config
+    # ports:
+      # - 1021:1010
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx200m -jar /app/eureka.jar
+##################EUREKA-2#######################
+  # eureka2:
+    # container_name: eureka2
+    # restart: always
+    # environment:
+      # TZ: Asia/Shanghai
+# #      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    # image: registry.cn-hangzhou.aliyuncs.com/xxyy/eureka:0.0.1
+    # depends_on:
+      # - config
+# #        condition: service_healthy
+    # ports:
+      # - 1022:1010
+    # logging:
+      # options:
+        # max-size: "10m"
+        # max-file: "10"
+    # command: java -jar /app/app.jar
+####################ZUUL####################
+  # zuul-auth:
+    # container_name: zuul-auth
+    # restart: always
+    # environment:
+      # TZ: Asia/Shanghai
+# #      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    # image: registry.cn-hangzhou.aliyuncs.com/xxyy/zuul-auth:0.0.1
+    # depends_on:
+      # - eureka
+      # # - eureka2
+# #        condition: service_healthy
+    # ports:
+      # - 443:443
+    # logging:
+      # options:
+        # max-size: "10m"
+        # max-file: "10"
+    # command: java -Xmx200m -jar /app/zuul-auth.jar
+###################ZUUL####################
+  zuul-order:
+    container_name: zuul-order
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/zuul-order:0.0.1
+    depends_on:
+      - eureka
+      # - eureka2
+#        condition: service_healthy
+    ports:
+      - 6010:6010
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx200m -jar /app/zuul-order.jar
+################AUTH######################
+#  auth-service:
+#    environment:
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#      NOTIFICATION_SERVICE_PASSWORD: $NOTIFICATION_SERVICE_PASSWORD
+#      STATISTICS_SERVICE_PASSWORD: $STATISTICS_SERVICE_PASSWORD
+#      ACCOUNT_SERVICE_PASSWORD: $ACCOUNT_SERVICE_PASSWORD
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#    image: sqshq/piggymetrics-auth-service
+#    restart: always
+#    depends_on:
+#      config:
+#        condition: service_healthy
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+#
+#  auth-mongodb:
+#    environment:
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#    image: sqshq/piggymetrics-mongodb
+#    restart: always
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+#############ACCOUNT_SERVICE########################
+  # account-service:
+    # container_name: account-service
+    # restart: always
+    # environment:
+      # TZ: Asia/Shanghai
+    # image: registry.cn-hangzhou.aliyuncs.com/xxyy/account-service:0.0.1
+    # depends_on:
+      # - eureka
+    # logging:
+      # options:
+        # max-size: "10m"
+        # max-file: "10"
+    # command: java -Xmx400m -jar /app/account-service.jar
+# #############ACCOUNT_SERVICE########################
+  # account-service-1:
+    # container_name: account-service-1
+    # restart: always
+    # environment:
+      # TZ: Asia/Shanghai
+    # image: registry.cn-hangzhou.aliyuncs.com/xxyy/account-service:0.0.1
+    # depends_on:
+      # - eureka
+    # logging:
+      # options:
+        # max-size: "10m"
+        # max-file: "10"
+    # command: java -Xmx400m -jar /app/account-service.jar
+#############FILE_SERVICE########################
+  file-service:
+    container_name: file-service
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#      ACCOUNT_SERVICE_PASSWORD: $ACCOUNT_SERVICE_PASSWORD
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/file-service:0.0.1
+    depends_on:
+      - eureka
+#      - eureka2
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx300m -jar /app/file-service.jar
+#############FILE_SERVICE-1########################
+  file-service-1:
+    container_name: file-service-1
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#      ACCOUNT_SERVICE_PASSWORD: $ACCOUNT_SERVICE_PASSWORD
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/file-service:0.0.1
+    depends_on:
+      - eureka
+#      - eureka2
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx300m -jar /app/file-service.jar
+#######################################
+#  account-mongodb:
+#    environment:
+#      INIT_DUMP: account-service-dump.js
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#    image: sqshq/piggymetrics-mongodb
+#    restart: always
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+#
+#  statistics-service:
+#    environment:
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#      STATISTICS_SERVICE_PASSWORD: $STATISTICS_SERVICE_PASSWORD
+#    image: sqshq/piggymetrics-statistics-service
+#    restart: always
+#    depends_on:
+#      config:
+#        condition: service_healthy
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+#
+#  statistics-mongodb:
+#    environment:
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#    image: sqshq/piggymetrics-mongodb
+#    restart: always
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+#
+#  notification-service:
+#    environment:
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#      NOTIFICATION_SERVICE_PASSWORD: $NOTIFICATION_SERVICE_PASSWORD
+#    image: sqshq/piggymetrics-notification-service
+#    restart: always
+#    depends_on:
+#      config:
+#        condition: service_healthy
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+
+#  notification-mongodb:
+#    image: sqshq/piggymetrics-mongodb
+#    restart: always
+#    environment:
+#      MONGODB_PASSWORD: $MONGODB_PASSWORD
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+###############DASHBOARD##################
+  dashboard:
+    container_name: dashboard
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+    image: registry.cn-hangzhou.aliyuncs.com/xxyy/dashboard:0.0.1
+   
+#        condition: service_healthy
+    ports:
+      - 5555:5555
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "10"
+    command: java -Xmx100m -jar /app/app.jar
+
+  #
+#  turbine-stream-service:
+#    environment:
+#      CONFIG_SERVICE_PASSWORD: $CONFIG_SERVICE_PASSWORD
+#    image: sqshq/piggymetrics-turbine-stream-service
+#    restart: always
+#    depends_on:
+#      config:
+#        condition: service_healthy
+#    ports:
+#    - 8989:8989
+#    logging:
+#      options:
+#        max-size: "10m"
+#        max-file: "10"
+
+  mysql:
+    container_name: mysql
+    restart: always
+    image: mysql:5.7
+    ports:
+      - "59999:3306"
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: xie123
+      #networks:
+      #- my_new
+
+    command:
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+      --max_allowed_packet=128M
+      --sql-mode="STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"
+    volumes:
+      - /root/mysql/conf:/etc/mysql
+      - /root/mysql/log:/var/log/mysql
+      - /root/mysql/data:/var/lib/mysql
+
+  # redis:
+    # container_name: redis
+    # restart: always
+    # image: redis:latest
+    # environment:
+      # TZ: Asia/Shanghai
+    # depends_on:
+      # - mysql
+      # #networks:
+      # #- my_new
+    # ports:
+      # - "9902:6379"
+    # volumes:
+      # - /root/redis/redis.conf:/etc/redis/redis.conf
+    # command: redis-server /etc/redis/redis.conf
+###################NGINX##################
+  nginx:
+    container_name: nginx
+    restart: always
+    image: nginx:latest
+    environment:
+      TZ: Asia/Shanghai
+    depends_on:
+      - php
+    ports:
+      - "8080:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /root/nginx/conf.d:/etc/nginx/conf.d
+      - /root/nginx/log:/var/log/nginx
+      - /root/project:/usr/share/nginx
+      - /root/wap:/usr/share/wap
+####################PHP##################
+  php:
+    container_name: php
+    image: leleos/php-fpm:7.2
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "9000:9000"
+    volumes:
+      - /root/nginx/conf.d:/etc/nginx/conf.d
+      - /root/project:/usr/share/nginx
+      - /root/wap:/usr/share/wap
+      - /root/nginx/log:/var/log/phplog
+    #command: curl -sS https://getcomposer.org/installer | php && php composer.phar install && require 'vendor/autoload.php' && /docker/entrypoint.sh
+  # tomcat:
+    # container_name: tomcat
+    # restart: always
+    # image: tomcat:latest
+    # environment:
+      # TZ: Asia/Shanghai
+    # ports:
+      # - 81:8080
+    # volumes:
+      # - /root/tomcat/webapps:/usr/local/tomcat/webapps
+
+
+
+
+#
+#networks:
+#  my_new:
